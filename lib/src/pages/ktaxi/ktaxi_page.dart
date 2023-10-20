@@ -19,7 +19,7 @@ class _KTaxiPageState extends State<KTaxiPage> {
 
   @override
   Widget build(BuildContext context) {
-    double medidaX = MediaQuery.of(context).size.width * 0.6;
+    double medidaX = MediaQuery.of(context).size.width * 0.8;
     int bestScore = 5; //Variable global guardada de el usuario
     final CarGame game = CarGame(medidaX, calculateHeight(medidaX), bestScore);
     return Scaffold(

@@ -24,11 +24,11 @@ class CarGame extends Game {
   //Variables del juego
 
   // porcentaje de tamaño de objetos en el juego; 22%
-  double tamObjPorcent = 22 / 100;
+  double tamObjPorcent = 21 / 100;
 
   //Dimensiones del obtejos como carro, obstaculos, texto
   double get medidasObjtWidth => medidaXGame * tamObjPorcent;
-  double get medidasObjtHeight => medidasObjtWidth * 0.625;
+  double get medidasObjtHeight => medidasObjtWidth;
   // distancia de carro desde el borde izquierdo
   static const double lanePadding = 10.0;
   //bandera para carriles; true = carril arriba, false = carril abajo
@@ -53,7 +53,7 @@ class CarGame extends Game {
   //Inicializar variables
   double _obstacleSpawnTimer = 0.0;
   //Posición vertical del auto inicial
-  double _carY = lanePadding;
+  double _carLineY = lanePadding;
   //Bandera que indica si el juego está pausado
   bool _isPaused = true;
   //posicion inicial del fondo
@@ -72,7 +72,6 @@ class CarGame extends Game {
   }
   ////////////////////////////////
 
-
   void _startGame() {
     _isPaused = false;
     _resetGame();
@@ -83,7 +82,7 @@ class CarGame extends Game {
     _score = 0;
     _timer = 0.0;
     _obstacleSpawnTimer = 0.0;
-    _carY = lanePadding;
+    _carLineY = lanePadding;
     speed = 200.0; // velocidad inicial
     secIncrement = 7.0; // segundos de espera para nuevo incremento
     _isTopLane = true;
@@ -95,7 +94,7 @@ class CarGame extends Game {
   void updateBestScore() {
     if (_score > _best) {
       _best = _score;
-     /*
+      /*
      agregar logica para guardar en variable global del usuario de su bestscore
      */
     }
@@ -106,8 +105,8 @@ class CarGame extends Game {
   Future<void> onLoad() async {
     _carImage = await _loadImage('assets/images/game/carro.png');
     _backgroundImage = await _loadImage('assets/images/game/carretera.png');
-    //5 imagenes de obstaculos desde obst1.png a obst5.png
-    for (int i = 1; i <= 5; i++) {
+    //11 imagenes de obstaculos desde obst1.png a obst11.png
+    for (int i = 1; i <= 11; i++) {
       final obstacleImage = await _loadImage('assets/images/game/obst$i.png');
       _obstacleImages.add(obstacleImage);
     }
@@ -115,51 +114,49 @@ class CarGame extends Game {
 
   @override
   void render(Canvas canvas) {
-
     //Aplica el recorte para que no se vean fuera los objetos
     canvas.clipRect(Rect.fromLTWH(0, 0, medidaXGame, medidaYGame));
 
     //Renderizado de fondo #1
-      canvas.drawImageRect(
-        _backgroundImage!,
-        Rect.fromLTWH(_backgroundX, 0, _backgroundImage!.width.toDouble(),
-            _backgroundImage!.height.toDouble()),
-        Rect.fromLTWH(0, 0, medidaXGame, medidaYGame),
-        Paint(),
-      );
+    canvas.drawImageRect(
+      _backgroundImage!,
+      Rect.fromLTWH(_backgroundX, 0, _backgroundImage!.width.toDouble(),
+          _backgroundImage!.height.toDouble()),
+      Rect.fromLTWH(0, 0, medidaXGame, medidaYGame),
+      Paint(),
+    );
 
     ////Renderizado de fondo #2, es la misma que 1 y no deja ver el fondo negro, sino un fondo infinito en loop
-      canvas.drawImageRect(
-        _backgroundImage!,
-        Rect.fromLTWH(
-            _backgroundX - _backgroundImage!.width.toDouble(),
-            0,
-            _backgroundImage!.width.toDouble(),
-            _backgroundImage!.height.toDouble()),
-        Rect.fromLTWH(0, 0, medidaXGame, medidaYGame),
-        Paint(),
-      );
+    canvas.drawImageRect(
+      _backgroundImage!,
+      Rect.fromLTWH(
+          _backgroundX - _backgroundImage!.width.toDouble(),
+          0,
+          _backgroundImage!.width.toDouble(),
+          _backgroundImage!.height.toDouble()),
+      Rect.fromLTWH(0, 0, medidaXGame, medidaYGame),
+      Paint(),
+    );
 
-      //renderizando de carro
-      final carImageWidth = _carImage!.width.toDouble();
-      final carImageHeight = _carImage!.height.toDouble();
-      final srcRect = Rect.fromLTWH(0, 0, carImageWidth, carImageHeight);
-      final dstRect = Rect.fromLTWH(
-        lanePadding,
-        _carY,
-        medidasObjtWidth,
-        medidasObjtHeight,
-      );
+    //renderizando de carro
+    final carImageWidth = _carImage!.width.toDouble();
+    final carImageHeight = _carImage!.height.toDouble();
+    final srcRect = Rect.fromLTWH(0, 0, carImageWidth, carImageHeight);
+    final dstRect = Rect.fromLTWH(
+      lanePadding,
+      _carLineY,
+      medidasObjtWidth,
+      medidasObjtHeight,
+    );
 
-      canvas.drawImageRect(
-        _carImage!,
-        srcRect,
-        dstRect,
-        Paint(),
-      );
+    canvas.drawImageRect(
+      _carImage!,
+      srcRect,
+      dstRect,
+      Paint(),
+    );
 
-
-      //renderizado de los obstaculos en orden random
+    //renderizado de los obstaculos en orden random
     _obstacles.forEach((obstacle) {
       final obstacleImageWidth =
           _obstacleImages[obstacle.type]!.width.toDouble();
@@ -184,17 +181,18 @@ class CarGame extends Game {
       text: TextSpan(
         text: 'Score: $_score\n'
             'Best: $_best',
-        style: TextStyle(fontSize: medidaXGame *0.04, color: Colors.white),
+        style: TextStyle(fontSize: medidaXGame * 0.04, color: Colors.white),
       ),
       textDirection: TextDirection.rtl,
     );
 
     textScreen.layout();
-    textScreen.paint(canvas, Offset(medidaXGame *0.98 - textScreen.width , medidaYGame *0.04  ));
+    textScreen.paint(canvas,
+        Offset(medidaXGame * 0.98 - textScreen.width, medidaYGame * 0.04));
 
     //render de textos de las variables, cambiar debug a true para ver
     if (debug == true) {
-      String textVars =  'Time: ${_timer.toStringAsFixed(1)}\n' +
+      String textVars = 'Time: ${_timer.toStringAsFixed(1)}\n' +
           'Increment: ${_timeUntilSpeedIncrement.toStringAsFixed(1)} s\n' +
           'IncrementLast: ${_timeSinceLastSpeedIncrement.toStringAsFixed(1)}\n' +
           'Current speed: $speed\n' +
@@ -205,71 +203,153 @@ class CarGame extends Game {
       final textScreen = TextPainter(
         text: TextSpan(
           text: textVars,
-          style: TextStyle(fontSize: medidaXGame *0.02, color: Colors.white),
+          style: TextStyle(fontSize: medidaXGame * 0.02, color: Colors.white),
         ),
         textDirection: TextDirection.rtl,
       );
 
       textScreen.layout();
-      textScreen.paint(canvas, Offset(medidaXGame *0.98 - textScreen.width , medidaYGame *0.23  ));
-
+      textScreen.paint(canvas,
+          Offset(medidaXGame * 0.98 - textScreen.width, medidaYGame * 0.23));
     }
     //se muestra texto cuando esta en pausa
-    if (_isPaused) {
-      final pausedText = TextPainter(
+    //se muestra texto cuando esta en pausa
+    void _drawTextOnCanvas(String text, Canvas canvas) {
+      final backgroundPaint = Paint()
+        ..color = Colors.black // Color de fondo del letrero
+        ..style = PaintingStyle.fill;
+
+      final borderPaint = Paint()
+        ..color = Colors.white // Color del borde
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0; // Ancho del borde
+
+      final textPainter = TextPainter(
         text: TextSpan(
-          text: 'Toca para empezar',
-          style: TextStyle(fontSize: medidaXGame * 0.05, color: Colors.white),
+          text: text,
+          style: TextStyle(
+            fontSize: medidaXGame * 0.05,
+            color: Colors.white,
+            shadows: [
+              Shadow(
+                color: Colors.black, // Color del sombreado del texto
+                blurRadius: 4, // Tamaño del sombreado
+              ),
+            ],
+            fontFamily: 'YourFontFamily', // Sustituye con una fuente personalizada si lo deseas
+          ),
         ),
         textDirection: TextDirection.ltr,
       );
 
-      pausedText.layout();
-      pausedText.paint(canvas, Offset(medidaXGame / 2 - pausedText.width / 2, medidaYGame / 2));
+      textPainter.layout();
+
+      final rect = Rect.fromPoints(
+        Offset(medidaXGame / 2 - textPainter.width / 2 - 10,
+            medidaYGame / 2 - 10),
+        Offset(medidaXGame / 2 + textPainter.width / 2 + 10,
+            medidaYGame / 2 + textPainter.height + 10),
+      );
+
+      // Dibuja el fondo del letrero
+      canvas.drawRect(rect, backgroundPaint);
+
+      // Dibuja el borde del letrero
+      canvas.drawRect(rect, borderPaint);
+
+      // Dibuja el texto
+      textPainter.paint(
+        canvas,
+        Offset(medidaXGame / 2 - textPainter.width / 2,
+            medidaYGame / 2),
+      );
+    }
+
+
+    if (!_waitToStart) {
+      _drawTextOnCanvas('Oh no :(', canvas);
+    } else if (_isPaused) {
+      _drawTextOnCanvas('Toca para empezar', canvas);
+    }
+
+
+
+    // +1
+    if (_scoreAnimation > 0) {
+      final scoreText = TextPainter(
+        text: TextSpan(
+          text: '+1',
+          style: TextStyle(fontSize: medidaXGame * 0.10, color: Colors.green),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+
+      scoreText.layout();
+      final scoreX = (medidaXGame * 0.30) - scoreText.width;
+      final scoreY = medidaYGame / 2 - (medidaYGame * 0.15);
+
+      // Dibuja la animación de +1
+      scoreText.paint(canvas, Offset(scoreX, scoreY));
     }
   }
 
   //resibe el gesto desde la pagina
+  bool _waitToStart = true;
   void onTapDown(TapDownDetails details) {
-    if (_isPaused) {
-      _startGame();
-    } else {
-      _changeLane();
+    if (_waitToStart) {
+      if (_isPaused) {
+        _startGame();
+      } else {
+        _changeLane();
+      }
     }
   }
 
   void _checkCollisions() {
+    double hitboxWidht = medidasObjtWidth - (medidasObjtWidth * 0.40);
+    //double hitboxWidht = medidasObjtWidth ;
+    double hitboxHeight = medidasObjtHeight - (medidasObjtHeight * 0.60);
+    //double hitboxHeight = medidasObjtHeight ;
     final carRect = Rect.fromLTWH(
-      lanePadding,
-      _carY,
-      medidasObjtWidth,
-      medidasObjtHeight,
-    );
+        lanePadding, (_carLineY + hitboxHeight / 2), hitboxWidht, hitboxHeight);
 
     for (final obstacle in _obstacles) {
       final obstacleRect = Rect.fromLTWH(
         obstacle.x,
         obstacle.y,
-        obstacle.width,
-        obstacle.height,
+        obstacle.width - (medidasObjtWidth * 0.30),
+        obstacle.height - (medidasObjtHeight * 0.20),
       );
 
       if (carRect.overlaps(obstacleRect)) {
-        _isPaused = true;
+        if (obstacle.type == 0) {
+          // obstaculo de bomba
+          _waitToStart = false;
+          _isPaused = true;
+          print("pausa + 2 segundos espera");
+          Future.delayed(Duration(seconds: 2)).then((_) {
+          print("sin espera");
+          _waitToStart = true;
+          });
+          //_obstacles.remove(obstacle);
+        } else {
+          _increaseScore();
+          _obstacles.remove(obstacle);
+        }
         return;
       }
 
       if (_isTopLane) {
         final distanceX = (obstacle.x - carRect.right).abs();
-        final distanceY = (obstacle.y + obstacle.height - _carY).abs();
-        if (distanceX <= -10.0 && distanceY <= medidasObjtHeight) {
+        final distanceY = (obstacle.y + obstacle.height - _carLineY).abs();
+        if (distanceX <= 0 && distanceY <= 0) {
           _isPaused = true;
           return;
         }
       } else {
         final distanceX = (obstacle.x - carRect.right).abs();
-        final distanceY = (obstacle.y - _carY).abs();
-        if (distanceX <= -10.0 && distanceY <= medidasObjtHeight) {
+        final distanceY = (obstacle.y - _carLineY).abs();
+        if (distanceX <= 0 && distanceY <= 0) {
           _isPaused = true;
           return;
         }
@@ -288,30 +368,33 @@ class CarGame extends Game {
     }
   }
 
+  int _scoreAnimation = 0;
 
   void _increaseScore() {
+    _scoreAnimation = 1;
+
+    // Establece un temporizador para restablecer _scoreAnimation después de 1 segundo.
+    Timer(Duration(seconds: 1), () {
+      _scoreAnimation = 0;
+    });
+
+    // Incrementa el puntaje real.
     _score++;
   }
 
-  // no recuerdo para que era pero trata sobre el movimiento
+  // para movimiento al deslizarse
   double _targetCarY = 10;
 
-  int speedChangeLane = 7;// 1 es muy lento 10 muy rapido
+  int speedChangeLane = 7; // 1 es muy lento 10 muy rapido
   @override
   void update(double dt) {
     if (_isPaused) {
       return;
     }
-    final double backgroundSpeed = speed * dt;
-    _backgroundX += backgroundSpeed;
-
-    //reiniciar posision fondo si llega al borde
-    if (_backgroundX >= _backgroundImage!.width.toDouble()) {
-      _backgroundX = 0.0;
-    }
+    final double actualSpeed = speed * dt;
 
     // Interpola la posición actual del carro hacia _targetCarY
-    _carY = lerpDouble(_carY, _targetCarY, speedChangeLane * dt)!;
+    _carLineY = lerpDouble(_carLineY, _targetCarY, speedChangeLane * dt)!;
 
     _timer += dt;
     _obstacleSpawnTimer += dt;
@@ -326,10 +409,17 @@ class CarGame extends Game {
       _timeUntilSpeedIncrement = secIncrement - _timeSinceLastSpeedIncrement;
     }
 
-    if (_obstacleSpawnTimer >= 2.0) {
+    if (_obstacleSpawnTimer >= 1.6) {
       _spawnObstacle();
       _obstacleSpawnTimer = 0.0;
     }
+
+    _backgroundX += actualSpeed * 3.57;
+    //reiniciar posision fondo si llega al borde
+    if (_backgroundX >= _backgroundImage!.width.toDouble()) {
+      _backgroundX = 0.0;
+    }
+
 
     final List<Obstacle> obstaclesCopy = List.from(_obstacles);
 
@@ -338,15 +428,12 @@ class CarGame extends Game {
 
       if (obstacle.x + obstacle.width < 0) {
         _obstacles.remove(obstacle);
-        _increaseScore();
       }
     });
 
     _checkCollisions();
     updateBestScore(); //cambia el best score si paso su best
-
   }
-
 
   void _increaseSpeedAndSpawnTime() {
     _obstacles.forEach((obstacle) {
@@ -355,11 +442,10 @@ class CarGame extends Game {
     speed += _speedIncrement;
   }
 
-
   void _spawnObstacle() {
     final random = Random();
 
-    final obstacleType = random.nextInt(5);
+    final obstacleType = random.nextInt(11);
 
     final obstacle = Obstacle(
       x: medidaXGame,
@@ -384,11 +470,12 @@ class Obstacle {
   double speed;
   int type;
 
-  Obstacle(
-      {required this.x,
-      required this.y,
-      required this.width,
-      required this.height,
-      required this.speed,
-      required this.type});
+  Obstacle({
+    required this.x,
+    required this.y,
+    required this.width,
+    required this.height,
+    required this.speed,
+    required this.type,
+  });
 }
